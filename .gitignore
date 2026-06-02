@@ -1,0 +1,19 @@
+# Ignore everything at repository root by default.
+/*
+
+# Keep only the deployable/source directories intended for this repository.
+!/.gitignore
+!/group-buy-market-master/
+!/s-pay-mall-ddd-market-master/
+
+# Common local, IDE, and build artifacts inside kept directories.
+**/.idea/
+**/*.iml
+**/target/
+**/build/
+**/.gradle/
+**/node_modules/
+**/dist/
+**/logs/
+**/*.log
+**/.DS_Store
