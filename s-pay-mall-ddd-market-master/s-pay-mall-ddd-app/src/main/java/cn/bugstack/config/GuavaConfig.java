@@ -26,6 +26,14 @@ public class GuavaConfig {
                 .build();
     }
 
+    @Bean(name = "wechatQrCodeTicket")
+    public Cache<String, String> wechatQrCodeTicket() {
+        return CacheBuilder.newBuilder()
+                .expireAfterWrite(300, TimeUnit.SECONDS)
+                .maximumSize(10000)
+                .build();
+    }
+
     @Bean
     public EventBus eventBusListener(OrderPaySuccessListener listener){
         EventBus eventBus = new EventBus();

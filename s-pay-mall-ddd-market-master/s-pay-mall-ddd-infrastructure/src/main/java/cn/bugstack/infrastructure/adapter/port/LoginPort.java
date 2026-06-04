@@ -1,6 +1,7 @@
 package cn.bugstack.infrastructure.adapter.port;
 
 import cn.bugstack.domain.auth.adapter.port.ILoginPort;
+import cn.bugstack.domain.auth.model.valobj.WeixinQrCodeTicketVO;
 import cn.bugstack.infrastructure.gateway.IWeixinApiService;
 import cn.bugstack.infrastructure.gateway.dto.WeixinQrCodeRequestDTO;
 import cn.bugstack.infrastructure.gateway.dto.WeixinQrCodeResponseDTO;
@@ -70,6 +71,44 @@ public class LoginPort implements ILoginPort {
         WeixinQrCodeResponseDTO weixinQrCodeRes = call.execute().body();
         assert null != weixinQrCodeRes;
         return weixinQrCodeRes.getTicket();
+    }
+
+    @Override
+    public WeixinQrCodeTicketVO createQrCodeTicket(String sceneStr, int expireSeconds) throws IOException {
+        // 1. 获取 accessToken
+        String accessToken = weixinAccessToken.getIfPresent(appid);
+        if (null == accessToken) {
+            Call<WeixinTokenResponseDTO> call = weixinApiService.getToken("client_credential", appid, appSecret);
+            WeixinTokenResponseDTO weixinTokenRes = call.execute().body();
+            if (weixinTokenRes == null || weixinTokenRes.getAccess_token() == null || weixinTokenRes.getAccess_token().isEmpty()) {
+                throw new IOException("获取微信 access_token 失败");
+            }
+            accessToken = weixinTokenRes.getAccess_token();
+            weixinAccessToken.put(appid, accessToken);
+        }
+
+        // 2. 生成 ticket
+        WeixinQrCodeRequestDTO weixinQrCodeReq = WeixinQrCodeRequestDTO.builder()
+                .expire_seconds(expireSeconds)
+                .action_name(WeixinQrCodeRequestDTO.ActionNameTypeVO.QR_STR_SCENE.getCode())
+                .action_info(WeixinQrCodeRequestDTO.ActionInfo.builder()
+                        .scene(WeixinQrCodeRequestDTO.ActionInfo.Scene.builder()
+                                .scene_str(sceneStr)
+                                .build())
+                        .build())
+                .build();
+
+        Call<WeixinQrCodeResponseDTO> call = weixinApiService.createQrCode(accessToken, weixinQrCodeReq);
+        WeixinQrCodeResponseDTO weixinQrCodeRes = call.execute().body();
+        if (weixinQrCodeRes == null || weixinQrCodeRes.getTicket() == null || weixinQrCodeRes.getTicket().isEmpty()) {
+            throw new IOException("获取微信扫码登录 ticket 失败");
+        }
+
+        return WeixinQrCodeTicketVO.builder()
+                .ticket(weixinQrCodeRes.getTicket())
+                .url(weixinQrCodeRes.getUrl())
+                .expireSeconds(Long.valueOf(expireSeconds))
+                .build();
     }
 
     @Override
