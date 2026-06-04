@@ -1,6 +1,7 @@
 package cn.bugstack.domain.auth.service;
 
 import cn.bugstack.domain.auth.adapter.port.ILoginPort;
+import cn.bugstack.domain.auth.model.entity.AuthTokenEntity;
 import cn.bugstack.domain.auth.model.entity.WechatPollEntity;
 import cn.bugstack.domain.auth.model.entity.WechatQrCodeEntity;
 import cn.bugstack.domain.auth.model.valobj.WechatPollStatusVO;
@@ -26,6 +27,8 @@ public class WeixinLoginService implements ILoginService {
     private Cache<String, String> openidToken;
     @Resource
     private Cache<String, String> wechatQrCodeTicket;
+    @Resource
+    private IAuthTokenService authTokenService;
 
     @Override
     public String createQrCodeTicket() throws Exception {
@@ -40,6 +43,7 @@ public class WeixinLoginService implements ILoginService {
         return ticket;
     }
 
+    //创建微信二维码登录链接
     @Override
     public WechatQrCodeEntity createWechatQrCode() throws Exception {
         String qrCodeId = UUID.randomUUID().toString().replace("-", "");
@@ -81,8 +85,11 @@ public class WeixinLoginService implements ILoginService {
                     .build();
         }
 
+        AuthTokenEntity authTokenEntity = authTokenService.createToken(openid);
+        wechatQrCodeTicket.invalidate(qrCodeId);
         return WechatPollEntity.builder()
-                .status(WechatPollStatusVO.SCANNED.getCode())
+                .status(WechatPollStatusVO.CONFIRMED.getCode())
+                .authTokenEntity(authTokenEntity)
                 .build();
     }
 

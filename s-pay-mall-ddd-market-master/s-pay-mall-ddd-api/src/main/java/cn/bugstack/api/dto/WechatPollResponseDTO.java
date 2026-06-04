@@ -1,21 +1,18 @@
 package cn.bugstack.api.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WechatPollResponseDTO {
+@EqualsAndHashCode(callSuper = true)
+public class WechatPollResponseDTO extends AuthTokenResponseDTO {
 
     private String status;
-    private String accessToken;
-    private String refreshToken;
-    private String tokenType;
-    private Long expiresIn;
-    private Long refreshExpiresIn;
 
 }

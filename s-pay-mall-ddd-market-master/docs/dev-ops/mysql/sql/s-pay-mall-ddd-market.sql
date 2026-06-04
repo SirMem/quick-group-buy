@@ -59,6 +59,25 @@ VALUES
 /*!40000 ALTER TABLE `pay_order` ENABLE KEYS */;
 UNLOCK TABLES;
 
+# 转储表 auth_refresh_token
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `auth_refresh_token`;
+
+CREATE TABLE `auth_refresh_token` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+  `openid` varchar(64) NOT NULL COMMENT '微信 openid',
+  `token_hash` varchar(64) NOT NULL COMMENT 'refresh token hash，不保存明文',
+  `status` varchar(16) NOT NULL COMMENT '状态；ACTIVE-有效、USED-已被刷新换新、REVOKED-已吊销',
+  `expire_time` datetime NOT NULL COMMENT '过期时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_token_hash` (`token_hash`),
+  KEY `idx_openid_status` (`openid`,`status`),
+  KEY `idx_expire_time` (`expire_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;

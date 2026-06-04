@@ -9,9 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WechatPollEntity {
+public class AuthTokenEntity {
 
-    private String status;
-    private AuthTokenEntity authTokenEntity;
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType;
+    private Long expiresIn;
+    private Long refreshExpiresIn;
 
 }

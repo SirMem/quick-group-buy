@@ -4,6 +4,7 @@ import cn.bugstack.api.IWechatAuthService;
 import cn.bugstack.api.dto.WechatPollResponseDTO;
 import cn.bugstack.api.dto.WechatQrCodeResponseDTO;
 import cn.bugstack.api.response.Response;
+import cn.bugstack.domain.auth.model.entity.AuthTokenEntity;
 import cn.bugstack.domain.auth.model.entity.WechatPollEntity;
 import cn.bugstack.domain.auth.model.entity.WechatQrCodeEntity;
 import cn.bugstack.domain.auth.service.ILoginService;
@@ -62,12 +63,22 @@ public class WechatAuthController implements IWechatAuthService {
             WechatPollEntity pollEntity = loginService.pollWechatLogin(qrCodeId);
             log.info("查询微信扫码登录状态 qrCodeId:{} status:{}", qrCodeId, pollEntity.getStatus());
 
+            AuthTokenEntity authTokenEntity = pollEntity.getAuthTokenEntity();
+            WechatPollResponseDTO.WechatPollResponseDTOBuilder<?, ?> responseBuilder = WechatPollResponseDTO.builder()
+                    .status(pollEntity.getStatus());
+            if (authTokenEntity != null) {
+                responseBuilder
+                        .accessToken(authTokenEntity.getAccessToken())
+                        .refreshToken(authTokenEntity.getRefreshToken())
+                        .tokenType(authTokenEntity.getTokenType())
+                        .expiresIn(authTokenEntity.getExpiresIn())
+                        .refreshExpiresIn(authTokenEntity.getRefreshExpiresIn());
+            }
+
             return Response.<WechatPollResponseDTO>builder()
                     .code(Constants.ResponseCode.SUCCESS.getCode())
                     .info(Constants.ResponseCode.SUCCESS.getInfo())
-                    .data(WechatPollResponseDTO.builder()
-                            .status(pollEntity.getStatus())
-                            .build())
+                    .data(responseBuilder.build())
                     .build();
         } catch (Exception e) {
             log.error("查询微信扫码登录状态失败 qrCodeId:{}", qrCodeId, e);
