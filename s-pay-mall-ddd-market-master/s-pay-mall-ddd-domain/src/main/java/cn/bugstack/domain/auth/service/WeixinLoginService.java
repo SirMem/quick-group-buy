@@ -85,8 +85,15 @@ public class WeixinLoginService implements ILoginService {
                     .build();
         }
 
+        // 原子消费：只有第一个成功删除 qrCodeId→ticket 的请求才能获得 Token
+        boolean consumed = wechatQrCodeTicket.asMap().remove(qrCodeId, ticket);
+        if (!consumed) {
+            return WechatPollEntity.builder()
+                    .status(WechatPollStatusVO.EXPIRED.getCode())
+                    .build();
+        }
+
         AuthTokenEntity authTokenEntity = authTokenService.createToken(openid);
-        wechatQrCodeTicket.invalidate(qrCodeId);
         return WechatPollEntity.builder()
                 .status(WechatPollStatusVO.CONFIRMED.getCode())
                 .authTokenEntity(authTokenEntity)

@@ -3,6 +3,7 @@ package cn.bugstack.domain.auth.service;
 import cn.bugstack.domain.auth.adapter.repository.IAuthTokenRepository;
 import cn.bugstack.domain.auth.model.entity.AuthTokenEntity;
 import cn.bugstack.domain.auth.model.entity.RefreshTokenEntity;
+import cn.bugstack.domain.auth.model.valobj.AuthMethodVO;
 import cn.bugstack.domain.auth.model.valobj.RefreshTokenStatusVO;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -51,6 +52,8 @@ public class AuthTokenService implements IAuthTokenService {
                 .tokenType(TOKEN_TYPE_BEARER)
                 .expiresIn(ACCESS_TOKEN_EXPIRES_IN)
                 .refreshExpiresIn(REFRESH_TOKEN_EXPIRES_IN)
+                .openid(openid)
+                .authMethod(AuthMethodVO.WECHAT_QR.getCode())
                 .build();
     }
 

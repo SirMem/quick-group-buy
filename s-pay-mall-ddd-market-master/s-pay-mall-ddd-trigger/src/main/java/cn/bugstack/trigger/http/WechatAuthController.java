@@ -72,7 +72,9 @@ public class WechatAuthController implements IWechatAuthService {
                         .refreshToken(authTokenEntity.getRefreshToken())
                         .tokenType(authTokenEntity.getTokenType())
                         .expiresIn(authTokenEntity.getExpiresIn())
-                        .refreshExpiresIn(authTokenEntity.getRefreshExpiresIn());
+                        .refreshExpiresIn(authTokenEntity.getRefreshExpiresIn())
+                        .openid(authTokenEntity.getOpenid())
+                        .authMethod(authTokenEntity.getAuthMethod());
             }
 
             return Response.<WechatPollResponseDTO>builder()

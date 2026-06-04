@@ -16,5 +16,7 @@ public class AuthTokenEntity {
     private String tokenType;
     private Long expiresIn;
     private Long refreshExpiresIn;
+    private String openid;
+    private String authMethod;
 
 }

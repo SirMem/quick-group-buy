@@ -20,5 +20,7 @@ public class AuthTokenResponseDTO {
     private String tokenType;
     private Long expiresIn;
     private Long refreshExpiresIn;
+    private String openid;
+    private String authMethod;
 
 }

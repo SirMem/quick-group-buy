@@ -51,6 +51,8 @@ public class TokenAuthController implements ITokenAuthService {
                             .tokenType(authTokenEntity.getTokenType())
                             .expiresIn(authTokenEntity.getExpiresIn())
                             .refreshExpiresIn(authTokenEntity.getRefreshExpiresIn())
+                            .openid(authTokenEntity.getOpenid())
+                            .authMethod(authTokenEntity.getAuthMethod())
                             .build())
                     .build();
         } catch (Exception e) {
