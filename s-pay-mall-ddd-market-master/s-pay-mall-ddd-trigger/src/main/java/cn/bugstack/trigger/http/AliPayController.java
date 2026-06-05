@@ -23,6 +23,9 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradeQueryRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
@@ -61,8 +64,8 @@ public class AliPayController implements IPayService {
     @Override
     public Response<String> createPayOrder(@RequestBody CreatePayRequestDTO createPayRequestDTO) {
         try {
-            log.info("商品下单，根据商品ID创建支付单开始 userId:{} productId:{}", createPayRequestDTO.getUserId(), createPayRequestDTO.getUserId());
-            String userId = createPayRequestDTO.getUserId();
+            String userId = currentUserId();
+            log.info("商品下单，根据商品ID创建支付单开始 userId:{} productId:{}", userId, createPayRequestDTO.getProductId());
             String productId = createPayRequestDTO.getProductId();
             String teamId = createPayRequestDTO.getTeamId();
             Integer marketType = createPayRequestDTO.getMarketType();
@@ -83,7 +86,7 @@ public class AliPayController implements IPayService {
                     .data(payOrderEntity.getPayUrl())
                     .build();
         } catch (Exception e) {
-            log.error("商品下单，根据商品ID创建支付单失败 userId:{} productId:{}", createPayRequestDTO.getUserId(), createPayRequestDTO.getUserId(), e);
+            log.error("商品下单，根据商品ID创建支付单失败 userId:{} productId:{}", currentUserId(), createPayRequestDTO.getProductId(), e);
             return Response.<String>builder()
                     .code(Constants.ResponseCode.UN_ERROR.getCode())
                     .info(Constants.ResponseCode.UN_ERROR.getInfo())
@@ -163,9 +166,9 @@ public class AliPayController implements IPayService {
     @Override
     public Response<QueryOrderListResponseDTO> queryUserOrderList(@RequestBody QueryOrderListRequestDTO requestDTO) {
         try {
-            log.info("查询用户订单列表开始 userId:{} lastId:{} pageSize:{}", requestDTO.getUserId(), requestDTO.getLastId(), requestDTO.getPageSize());
-            
-            String userId = requestDTO.getUserId();
+            String userId = currentUserId();
+            log.info("查询用户订单列表开始 userId:{} lastId:{} pageSize:{}", userId, requestDTO.getLastId(), requestDTO.getPageSize());
+
             Long lastId = requestDTO.getLastId();
             Integer pageSize = requestDTO.getPageSize();
             
@@ -209,7 +212,7 @@ public class AliPayController implements IPayService {
                     .data(responseDTO)
                     .build();
         } catch (Exception e) {
-            log.error("查询用户订单列表失败 userId:{}", requestDTO.getUserId(), e);
+            log.error("查询用户订单列表失败 userId:{}", currentUserId(), e);
             return Response.<QueryOrderListResponseDTO>builder()
                     .code(Constants.ResponseCode.UN_ERROR.getCode())
                     .info(Constants.ResponseCode.UN_ERROR.getInfo())
@@ -229,10 +232,9 @@ public class AliPayController implements IPayService {
     @Override
     public Response<RefundOrderResponseDTO> refundOrder(@RequestBody RefundOrderRequestDTO requestDTO) {
         try {
-            log.info("用户退单开始 userId:{} orderId:{}", requestDTO.getUserId(), requestDTO.getOrderId());
-            
-            String userId = requestDTO.getUserId();
+            String userId = currentUserId();
             String orderId = requestDTO.getOrderId();
+            log.info("用户退单开始 userId:{} orderId:{}", userId, orderId);
             
             // 执行退单操作
             boolean success = orderService.refundMarketOrder(userId, orderId);
@@ -249,7 +251,7 @@ public class AliPayController implements IPayService {
                     .data(responseDTO)
                     .build();
         } catch (Exception e) {
-            log.error("用户退单失败 userId:{} orderId:{}", requestDTO.getUserId(), requestDTO.getOrderId(), e);
+            log.error("用户退单失败 userId:{} orderId:{}", currentUserId(), requestDTO.getOrderId(), e);
             
             RefundOrderResponseDTO responseDTO = new RefundOrderResponseDTO();
             responseDTO.setSuccess(false);
@@ -339,6 +341,14 @@ public class AliPayController implements IPayService {
                     .data("系统异常: " + e.getMessage())
                     .build();
         }
+    }
+
+    private String currentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        return authentication.getName();
     }
 
 }

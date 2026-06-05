@@ -8,8 +8,12 @@
     </parent>
 
     <artifactId>s-pay-mall-ddd-app</artifactId>
-    
+
     <packaging>jar</packaging>
+
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
     
     <dependencies>
         <dependency>
@@ -116,7 +120,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <skipTests>${skipTests}</skipTests>
                     <testFailureIgnore>false</testFailureIgnore>
                     <includes>
                         <include>**/*Test.java</include>
