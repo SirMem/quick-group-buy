@@ -6,10 +6,14 @@ import java.util.Date;
 
 public interface IAuthTokenRepository {
 
-    void saveRefreshToken(String openid, String refreshTokenHash, Date expireTime);
+    void saveRefreshToken(String openid, String refreshTokenHash, String tokenFamilyId, Date expireTime);
 
     RefreshTokenEntity queryRefreshToken(String refreshTokenHash);
 
-    boolean changeRefreshTokenStatus(String refreshTokenHash, String oldStatus, String newStatus);
+    boolean markRefreshTokenUsed(String refreshTokenHash, String replacedByTokenHash);
+
+    boolean revokeActiveRefreshToken(String refreshTokenHash);
+
+    boolean revokeTokenFamily(String tokenFamilyId);
 
 }
