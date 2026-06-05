@@ -68,14 +68,18 @@ CREATE TABLE `auth_refresh_token` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
   `openid` varchar(64) NOT NULL COMMENT '微信 openid',
   `token_hash` varchar(64) NOT NULL COMMENT 'refresh token hash，不保存明文',
+  `token_family_id` varchar(64) NOT NULL COMMENT 'refresh token family id，一次登录会话内保持不变',
   `status` varchar(16) NOT NULL COMMENT '状态；ACTIVE-有效、USED-已被刷新换新、REVOKED-已吊销',
   `expire_time` datetime NOT NULL COMMENT '过期时间',
+  `revoked_at` datetime DEFAULT NULL COMMENT 'refresh token 失效时间；refresh 轮换、logout 或 family 吊销时写入',
+  `replaced_by_token_hash` varchar(64) DEFAULT NULL COMMENT 'refresh 轮换后替换它的新 refresh token hash',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_token_hash` (`token_hash`),
   KEY `idx_openid_status` (`openid`,`status`),
-  KEY `idx_expire_time` (`expire_time`)
+  KEY `idx_expire_time` (`expire_time`),
+  KEY `idx_token_family_status` (`token_family_id`,`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 

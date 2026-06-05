@@ -308,7 +308,8 @@ POST /api/auth/logout
 - 跨标签页复杂会话同步
 - 多设备登录态列表
 - accessToken 到期前的定时预刷新
-- 刷新并发风暴控制（例如 single-flight queue）
+
+> **关于刷新并发（single-flight）：** 后端 Issuse #3 实现了严格复用检测机制——如果一个 refresh token 被并发使用（例如多个业务请求同时触发 refresh），后端会按旧 token 复用处理，吊销整个 `token_family_id`，导致当前会话需要重新扫码登录。因此 **刷新并发风暴控制（single-flight queue）建议第一阶段就做**，至少确保同一时间只有一个 refresh 请求在途。可参考以下最小实现：在 `auth-service` 模块中用一个 Promise 锁，第一个 refresh 请求完成后 resolve 所有等待者，从而把 N 次并发 refresh 合并为一次。
 
 这些能力可以等前端页面真正上线后，再作为第二阶段增强。
 

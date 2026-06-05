@@ -6,27 +6,52 @@
         <id column="id" property="id"/>
         <result column="openid" property="openid"/>
         <result column="token_hash" property="tokenHash"/>
+        <result column="token_family_id" property="tokenFamilyId"/>
         <result column="status" property="status"/>
         <result column="expire_time" property="expireTime"/>
+        <result column="revoked_at" property="revokedAt"/>
+        <result column="replaced_by_token_hash" property="replacedByTokenHash"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
     <insert id="insert" parameterType="cn.bugstack.infrastructure.dao.po.AuthRefreshToken">
-        insert into auth_refresh_token(openid, token_hash, status, expire_time, create_time, update_time)
-        values(#{openid}, #{tokenHash}, #{status}, #{expireTime}, now(), now())
+        insert into auth_refresh_token(openid, token_hash, token_family_id, status, expire_time, create_time, update_time)
+        values(#{openid}, #{tokenHash}, #{tokenFamilyId}, #{status}, #{expireTime}, now(), now())
     </insert>
 
     <select id="queryByTokenHash" parameterType="java.lang.String" resultMap="dataMap">
-        select id, openid, token_hash, status, expire_time, create_time, update_time
+        select id, openid, token_hash, token_family_id, status, expire_time, revoked_at, replaced_by_token_hash, create_time, update_time
         from auth_refresh_token
         where token_hash = #{tokenHash}
     </select>
 
-    <update id="updateStatus">
+    <update id="markUsed">
         update auth_refresh_token
-        set status = #{newStatus}, update_time = now()
-        where token_hash = #{tokenHash} and status = #{oldStatus}
+        set status = 'USED',
+            revoked_at = now(),
+            replaced_by_token_hash = #{replacedByTokenHash},
+            update_time = now()
+        where token_hash = #{tokenHash}
+          and status = 'ACTIVE'
+    </update>
+
+    <update id="revokeActive">
+        update auth_refresh_token
+        set status = 'REVOKED',
+            revoked_at = ifnull(revoked_at, now()),
+            update_time = now()
+        where token_hash = #{tokenHash}
+          and status = 'ACTIVE'
+    </update>
+
+    <update id="revokeFamily">
+        update auth_refresh_token
+        set status = 'REVOKED',
+            revoked_at = ifnull(revoked_at, now()),
+            update_time = now()
+        where token_family_id = #{tokenFamilyId}
+          and status = 'ACTIVE'
     </update>
 
 </mapper>

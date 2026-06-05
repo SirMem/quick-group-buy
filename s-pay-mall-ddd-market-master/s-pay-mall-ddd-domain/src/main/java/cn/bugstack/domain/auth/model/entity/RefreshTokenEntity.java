@@ -15,7 +15,10 @@ public class RefreshTokenEntity {
 
     private String openid;
     private String tokenHash;
+    private String tokenFamilyId;
     private String status;
     private Date expireTime;
+    private Date revokedAt;
+    private String replacedByTokenHash;
 
 }

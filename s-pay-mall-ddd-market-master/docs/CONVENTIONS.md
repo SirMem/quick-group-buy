@@ -40,7 +40,17 @@
 3. “支付成功”“营销结算”“交易完成”是三个不同阶段，不能合并成一个“完成”状态。
 4. “退单”和“退款”必须区分：`WAIT_REFUND` 表示退单后等待退款，不等同于退款已经完成。
 
-## 暂未拍板的约束
+## Auth Token Conventions
+
+- Refresh token 明文只返回给客户端，服务端只保存 SHA-256 hash。
+- 一次扫码登录创建一个 `token_family_id`，表示一次登录会话。
+- Refresh token 是一次性的；refresh 成功后旧 refresh token 标记为 `USED`。
+- 成功 refresh 后旧 refresh token 必须写入 `revoked_at` 和 `replaced_by_token_hash`。
+- 新 refresh token 必须继承旧 token 的 `token_family_id`。
+- 旧 refresh token 二次使用返回未登录，并按严格复用检测吊销同一个 `token_family_id` 下仍 active 的 refresh token。
+- Logout 只幂等吊销当前提交的 active refresh token，不默认吊销同一 openid 的其他会话。
+- 未引入 Redis/access-token blacklist 前，logout 或 family 吊销只能阻断后续 refresh；已签发 access token 可能在 JWT 过期前仍有效。
+- 前端应尽量对 refresh 请求做 single-flight/串行化；如果并发复用同一个旧 refresh token，后端会按严格复用检测处理，可能导致当前会话需要重新登录。
 
 以下内容已经发现存在讨论价值，但暂不写入正式规范：
 

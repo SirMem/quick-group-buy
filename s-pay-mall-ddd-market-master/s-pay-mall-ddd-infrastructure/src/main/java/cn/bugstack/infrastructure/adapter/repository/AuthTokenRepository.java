@@ -16,10 +16,11 @@ public class AuthTokenRepository implements IAuthTokenRepository {
     private IAuthTokenDao authTokenDao;
 
     @Override
-    public void saveRefreshToken(String openid, String refreshTokenHash, Date expireTime) {
+    public void saveRefreshToken(String openid, String refreshTokenHash, String tokenFamilyId, Date expireTime) {
         authTokenDao.insert(AuthRefreshToken.builder()
                 .openid(openid)
                 .tokenHash(refreshTokenHash)
+                .tokenFamilyId(tokenFamilyId)
                 .status("ACTIVE")
                 .expireTime(expireTime)
                 .build());
@@ -33,14 +34,27 @@ public class AuthTokenRepository implements IAuthTokenRepository {
         return RefreshTokenEntity.builder()
                 .openid(authRefreshToken.getOpenid())
                 .tokenHash(authRefreshToken.getTokenHash())
+                .tokenFamilyId(authRefreshToken.getTokenFamilyId())
                 .status(authRefreshToken.getStatus())
                 .expireTime(authRefreshToken.getExpireTime())
+                .revokedAt(authRefreshToken.getRevokedAt())
+                .replacedByTokenHash(authRefreshToken.getReplacedByTokenHash())
                 .build();
     }
 
     @Override
-    public boolean changeRefreshTokenStatus(String refreshTokenHash, String oldStatus, String newStatus) {
-        return authTokenDao.updateStatus(refreshTokenHash, oldStatus, newStatus);
+    public boolean markRefreshTokenUsed(String refreshTokenHash, String replacedByTokenHash) {
+        return authTokenDao.markUsed(refreshTokenHash, replacedByTokenHash);
+    }
+
+    @Override
+    public boolean revokeActiveRefreshToken(String refreshTokenHash) {
+        return authTokenDao.revokeActive(refreshTokenHash);
+    }
+
+    @Override
+    public boolean revokeTokenFamily(String tokenFamilyId) {
+        return authTokenDao.revokeFamily(tokenFamilyId);
     }
 
 }

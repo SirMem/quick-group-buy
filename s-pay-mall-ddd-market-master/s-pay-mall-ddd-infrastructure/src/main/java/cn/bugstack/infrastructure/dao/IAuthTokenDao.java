@@ -11,6 +11,10 @@ public interface IAuthTokenDao {
 
     AuthRefreshToken queryByTokenHash(@Param("tokenHash") String tokenHash);
 
-    boolean updateStatus(@Param("tokenHash") String tokenHash, @Param("oldStatus") String oldStatus, @Param("newStatus") String newStatus);
+    boolean markUsed(@Param("tokenHash") String tokenHash, @Param("replacedByTokenHash") String replacedByTokenHash);
+
+    boolean revokeActive(@Param("tokenHash") String tokenHash);
+
+    boolean revokeFamily(@Param("tokenFamilyId") String tokenFamilyId);
 
 }
